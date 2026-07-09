@@ -38,23 +38,63 @@ import com.example.p3test_pokedex.presentation.ui.PokemonListScreen
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
- * Enums representing the active bottom bar tabs.
+ * Enumeration representing the available bottom navigation tabs in the main screen.
+ *
+ * @see PokemonListFragment
  */
 enum class MainTab {
+    /** The primary Pokédex tab showing the paginated list of all Pokémon. */
     Pokedex,
+
+    /** The favorites tab showing only the user's bookmarked Pokémon. */
     Favorites
 }
 
 /**
- * Fragment hosting the Pokémon List Screen and Favorites Screen inside a Bottom Navigation.
- * Uses Koin to inject the ViewModel and Navigation Controller to navigate on card click.
- * All logic for checking network states is delegated to the Use Cases and ViewModel,
+ * Fragment that hosts the main application screen with a bottom navigation bar.
+ *
+ * This fragment is responsible for:
+ * - Rendering a [Scaffold] with a [NavigationBar] containing two tabs: Pokédex and Favorites.
+ * - Displaying the [PokemonListScreen] when the [MainTab.Pokedex] tab is selected.
+ * - Displaying the [FavoritesScreen] when the [MainTab.Favorites] tab is selected.
+ * - Collecting single-shot navigation events from [PokemonListViewModel.navigateToDetail]
+ *   and navigating to the detail fragment via the Navigation Component.
+ * - Showing a non-cancelable "No Internet Connection" [AlertDialog] when the ViewModel
+ *   signals that the device lacks network connectivity, with options to open Wi-Fi settings
+ *   or dismiss the dialog.
+ *
+ * The ViewModel is injected via Koin's `viewModel()` delegate and is scoped to this Fragment.
+ * All business logic (network checks, search, pagination) is delegated to [PokemonListViewModel],
  * keeping this UI layer strictly visual and state-bound.
+ *
+ * @see PokemonListViewModel
+ * @see PokemonListScreen
+ * @see FavoritesScreen
  */
 class PokemonListFragment : Fragment() {
 
+    /**
+     * The ViewModel responsible for managing the Pokémon list, search, favorites,
+     * and network connectivity state. Injected lazily by Koin.
+     */
     private val viewModel: PokemonListViewModel by viewModel()
 
+    /**
+     * Creates and returns the view hierarchy associated with this fragment.
+     *
+     * Returns a [ComposeView] that hosts the entire main screen UI wrapped inside
+     * the application's [P3TestPokedexTheme]. The Compose content includes:
+     * - A bottom [NavigationBar] with Pokédex and Favorites tabs.
+     * - A [LaunchedEffect] that reloads favorites when switching to the Favorites tab.
+     * - A [LaunchedEffect] that collects navigation events and navigates to the detail fragment.
+     * - A non-cancelable [AlertDialog] for the no-internet-connection state.
+     *
+     * @param inflater           The [LayoutInflater] object used to inflate views.
+     * @param container          The parent view that this fragment's UI should be attached to.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a
+     *   previous saved state.
+     * @return The root [View] (a [ComposeView]) for the fragment's UI.
+     */
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

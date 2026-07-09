@@ -3,15 +3,29 @@ package com.example.p3test_pokedex.domain.usecase
 import com.example.p3test_pokedex.domain.repository.PokemonRepository
 
 /**
- * Use case to remove a Pokémon from the favorites list.
+ * Use case that encapsulates the business rule of removing a Pokémon
+ * from the user's favorites list.
  *
- * @property repository The repository to manage Pokemon data.
+ * **Business rule:** The user can un-favorite a Pokémon from either the
+ * detail screen or the favorites list. If the Pokémon is not currently
+ * a favorite, the operation completes silently without error.
+ *
+ * This class delegates the deletion to [PokemonRepository.removeFavorite]
+ * and exposes the operation as a callable `operator fun invoke`.
+ *
+ * @property repository The [PokemonRepository] used to delete the favorite entry.
+ * @see AddFavoriteUseCase
+ * @see IsFavoriteUseCase
+ * @see GetFavoriteListUseCase
  */
 class RemoveFavoriteUseCase(private val repository: PokemonRepository) {
     /**
-     * Executes the use case.
+     * Removes the Pokémon with the given ID from the favorites list.
      *
-     * @param id The unique identifier of the Pokémon.
+     * This is a suspending function and must be called from a coroutine scope.
+     * If the Pokémon is not a favorite, the operation is a no-op.
+     *
+     * @param id The unique identifier of the Pokémon to remove from favorites.
      */
     suspend operator fun invoke(id: Int) {
         repository.removeFavorite(id)

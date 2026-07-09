@@ -6,14 +6,25 @@ import com.example.p3test_pokedex.domain.repository.AudioPlayer
 import com.example.p3test_pokedex.domain.repository.NetworkMonitor
 
 /**
- * Concrete implementation of [AudioPlayer] utilizing Android's MediaPlayer.
+ * Concrete implementation of [AudioPlayer] utilizing Android's [MediaPlayer].
  * Integrates [NetworkMonitor] to check connectivity before trying to play remote network audio,
  * preventing native state crashes when the device is offline.
+ *
+ * @property networkMonitor Used to check connection status before triggering playback.
  */
 class AudioPlayerImpl(private val networkMonitor: NetworkMonitor) : AudioPlayer {
     
+    /**
+     * Backing instance of Android [MediaPlayer] used for playback.
+     */
     private var mediaPlayer: MediaPlayer? = null
 
+    /**
+     * Starts playing audio from the specified network URL.
+     * Checks internet connection beforehand to prevent network errors in [MediaPlayer].
+     *
+     * @param url Fully qualified HTTP URL targeting an audio file.
+     */
     override fun play(url: String) {
         // Prevent trying to play remote URLs when offline, avoiding native MediaPlayer crashes
         if (!networkMonitor.isConnected()) {
@@ -49,6 +60,9 @@ class AudioPlayerImpl(private val networkMonitor: NetworkMonitor) : AudioPlayer 
         }
     }
 
+    /**
+     * Releases resource handles and sets the inner [mediaPlayer] to null.
+     */
     override fun release() {
         try {
             mediaPlayer?.release()

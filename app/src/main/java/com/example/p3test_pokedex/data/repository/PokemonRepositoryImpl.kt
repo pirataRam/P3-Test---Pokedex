@@ -8,24 +8,37 @@ import com.example.p3test_pokedex.domain.model.Pokemon
 import com.example.p3test_pokedex.domain.model.PokemonDetail
 import com.example.p3test_pokedex.domain.model.PokemonStat
 import com.example.p3test_pokedex.domain.repository.PokemonRepository
-
 import com.example.p3test_pokedex.data.local.entity.FavoritePokemonEntity
 
 /**
  * Implementation of [PokemonRepository] that provides caching functionality
  * using a local Room Database and network fetching using a Retrofit API service.
+ *
+ * @property apiService Retrofit API service client for remote data retrieval.
+ * @property pokemonDao Room Data Access Object for local data storage and query operations.
  */
 class PokemonRepositoryImpl(
     private val apiService: PokeApiService,
     private val pokemonDao: PokemonDao
 ) : PokemonRepository {
 
+    /**
+     * Retrieves the complete list of Pokémon marked as favorites.
+     * Maps local entities to domain models.
+     *
+     * @return List of favorite Pokémon.
+     */
     override suspend fun getFavorites(): List<Pokemon> {
         return pokemonDao.getFavorites().map {
             Pokemon(it.id, it.name, it.imageUrl)
         }
     }
 
+    /**
+     * Saves a Pokémon into local database favorites.
+     *
+     * @param pokemon Domain Pokémon model.
+     */
     override suspend fun addFavorite(pokemon: Pokemon) {
         pokemonDao.insertFavorite(
             FavoritePokemonEntity(
@@ -36,14 +49,33 @@ class PokemonRepositoryImpl(
         )
     }
 
+    /**
+     * Removes a Pokémon from local database favorites by ID.
+     *
+     * @param id Pokémon unique ID.
+     */
     override suspend fun removeFavorite(id: Int) {
         pokemonDao.deleteFavorite(id)
     }
 
+    /**
+     * Checks if a Pokémon exists in the database favorites list.
+     *
+     * @param id Pokémon unique ID.
+     * @return `true` if saved; `false` otherwise.
+     */
     override suspend fun isFavorite(id: Int): Boolean {
         return pokemonDao.isFavorite(id)
     }
 
+    /**
+     * Obtains a paginated page of Pokémon. Check local DB cache first.
+     * If cached count is less than [limit], fetches from PokeAPI, stores into cache, and returns.
+     *
+     * @param limit Quantity of elements to load.
+     * @param offset Start offset index.
+     * @return List of Pokémon summaries.
+     */
     override suspend fun getPokemonList(limit: Int, offset: Int): List<Pokemon> {
         val cached = pokemonDao.getPokemonList(limit, offset)
         return if (cached.isEmpty() || cached.size < limit) {
@@ -64,6 +96,13 @@ class PokemonRepositoryImpl(
         }
     }
 
+    /**
+     * Obtains detailed Pokémon attributes by ID. Check Room database first.
+     * If absent locally, executes API call, stores in Room, and maps to domain.
+     *
+     * @param id Pokémon ID.
+     * @return Domain detail model.
+     */
     override suspend fun getPokemonDetail(id: Int): PokemonDetail {
         val cached = pokemonDao.getPokemonDetail(id)
         return if (cached != null) {
@@ -90,6 +129,13 @@ class PokemonRepositoryImpl(
         }
     }
 
+    /**
+     * Obtains detailed Pokémon attributes by name. Check Room database first.
+     * If absent locally, executes API call, stores in Room, and maps to domain.
+     *
+     * @param name Pokémon name.
+     * @return Domain detail model.
+     */
     override suspend fun getPokemonDetailByName(name: String): PokemonDetail {
         val cached = pokemonDao.getPokemonDetailByName(name)
         return if (cached != null) {
@@ -117,8 +163,11 @@ class PokemonRepositoryImpl(
     }
 
     /**
-     * Extracts the Pokémon ID from its url.
+     * Extracts the Pokémon ID from its resource url.
      * Expected url format: https://pokeapi.co/api/v2/pokemon/{id}/
+     *
+     * @param url API url endpoint.
+     * @return Parsed integer ID.
      */
     private fun extractIdFromUrl(url: String): Int {
         return url.split("/")
@@ -128,7 +177,10 @@ class PokemonRepositoryImpl(
     }
 
     /**
-     * Maps a [PokemonDetailEntity] to a domain [PokemonDetail].
+     * Maps a local [PokemonDetailEntity] record to a domain model [PokemonDetail].
+     *
+     * @param entity Room Entity model.
+     * @return Clean domain model.
      */
     private fun mapToDomain(entity: PokemonDetailEntity): PokemonDetail {
         return PokemonDetail(
