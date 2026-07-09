@@ -115,4 +115,7 @@ dependencies {
   // Paging 3
   implementation(libs.androidx.paging.runtime)
   implementation(libs.androidx.paging.compose)
+
+  // SplashScreen
+  implementation("androidx.core:core-splashscreen:1.0.1")
 }
