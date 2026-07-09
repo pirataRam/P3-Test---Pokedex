@@ -54,7 +54,7 @@ val networkModule = module {
     }
 
     single<NetworkMonitor> { NetworkMonitorImpl(androidContext()) }
-    single<AudioPlayer> { AudioPlayerImpl() }
+    single<AudioPlayer> { AudioPlayerImpl(get()) }
 }
 
 val databaseModule = module {
