@@ -3,32 +3,30 @@ package com.example.p3test_pokedex.domain.usecase
 import com.example.p3test_pokedex.domain.model.Pokemon
 import com.example.p3test_pokedex.domain.model.PokemonDetail
 import com.example.p3test_pokedex.domain.repository.PokemonRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 /**
- * Unit test suite for the [GetPokemonListUseCase] class.
+ * Unit test suite for the [GetPokemonListPagedUseCase] class.
  */
-class GetPokemonListUseCaseTest {
+class GetPokemonListPagedUseCaseTest {
 
     private val fakeRepository = FakePokemonRepository()
-    private val getPokemonListUseCase = GetPokemonListUseCase(fakeRepository)
+    private val getPokemonListPagedUseCase = GetPokemonListPagedUseCase(fakeRepository)
 
     @Test
-    fun `invoke with limit and offset returns list of Pokémon from repository`() = runTest {
-        // Given
-        val limit = 20
-        val offset = 0
-
+    fun `invoke returns a non-null Flow of PagingData`() = runTest {
         // When
-        val result = getPokemonListUseCase(limit, offset)
+        val flow = getPokemonListPagedUseCase()
 
         // Then
-        assertEquals(3, result.size)
-        assertEquals("bulbasaur", result[0].name)
-        assertEquals("ivysaur", result[1].name)
-        assertEquals("venusaur", result[2].name)
+        assertNotNull(flow)
+
+        // Retrieve the first emission from the flow to confirm it's instantiated correctly
+        val pagingData = flow.first()
+        assertNotNull(pagingData)
     }
 }
 

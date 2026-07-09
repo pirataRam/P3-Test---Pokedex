@@ -38,6 +38,12 @@ android {
         excludes += "/META-INF/{AL2.0,LGPL2.1}"
       }
     }
+
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
 }
 
 kotlin {
@@ -105,4 +111,8 @@ dependencies {
   implementation(libs.fragment.ktx)
   implementation(libs.navigation.fragment)
   implementation(libs.navigation.ui)
+
+  // Paging 3
+  implementation(libs.androidx.paging.runtime)
+  implementation(libs.androidx.paging.compose)
 }

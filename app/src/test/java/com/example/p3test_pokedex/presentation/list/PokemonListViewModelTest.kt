@@ -1,32 +1,33 @@
 package com.example.p3test_pokedex.presentation.list
 
+import androidx.paging.PagingSource
+import com.example.p3test_pokedex.data.paging.PokemonPagingSource
 import com.example.p3test_pokedex.domain.model.Pokemon
 import com.example.p3test_pokedex.domain.model.PokemonDetail
 import com.example.p3test_pokedex.domain.repository.PokemonRepository
-import com.example.p3test_pokedex.domain.usecase.GetPokemonListUseCase
+import com.example.p3test_pokedex.domain.usecase.GetPokemonListPagedUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
 /**
- * Unit test suite for the [PokemonListViewModel] class.
+ * Unit test suite for the [PokemonListViewModel] class and Paging components.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class PokemonListViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private val fakeRepository = FakePokemonRepository()
-    private val getPokemonListUseCase = GetPokemonListUseCase(fakeRepository)
+    private val getPokemonListPagedUseCase = GetPokemonListPagedUseCase(fakeRepository)
     private lateinit var viewModel: PokemonListViewModel
 
     @Before
@@ -40,35 +41,54 @@ class PokemonListViewModelTest {
     }
 
     @Test
-    fun `loadPokemonList successfully updates uiState to Success`() = runTest(testDispatcher) {
-        // Given
-        viewModel = PokemonListViewModel(getPokemonListUseCase)
-
-        // When
-        advanceUntilIdle()
-
-        // Then
-        val state = viewModel.uiState.value
-        assertTrue(state is PokemonListUiState.Success)
-        assertEquals(3, (state as PokemonListUiState.Success).pokemonList.size)
+    fun `viewModel exposes paging flow successfully`() = runTest(testDispatcher) {
+        viewModel = PokemonListViewModel(getPokemonListPagedUseCase)
+        val flow = viewModel.pokemonPagingDataFlow
+        assertNotNull(flow)
     }
 
     @Test
-    fun `loadPokemonList with empty repository updates uiState to Empty`() = runTest(testDispatcher) {
-        // Given
-        val emptyUseCase = GetPokemonListUseCase(object : PokemonRepository {
-            override suspend fun getPokemonList(limit: Int, offset: Int): List<Pokemon> = emptyList()
+    fun `PokemonPagingSource load returns Page when successful`() = runTest(testDispatcher) {
+        val pagingSource = PokemonPagingSource(fakeRepository)
+
+        val result = pagingSource.load(
+            PagingSource.LoadParams.Refresh(
+                key = null,
+                loadSize = 20,
+                placeholdersEnabled = false
+            )
+        )
+
+        assertTrue(result is PagingSource.LoadResult.Page)
+        val page = result as PagingSource.LoadResult.Page
+        assertEquals(3, page.data.size)
+        assertEquals("bulbasaur", page.data[0].name)
+        assertEquals(null, page.prevKey)
+        assertEquals(null, page.nextKey) // Since response size (3) is less than loadSize (20)
+    }
+
+    @Test
+    fun `PokemonPagingSource load returns Error on failure`() = runTest(testDispatcher) {
+        val failingRepository = object : PokemonRepository {
+            override suspend fun getPokemonList(limit: Int, offset: Int): List<Pokemon> {
+                throw RuntimeException("Network Error")
+            }
             override suspend fun getPokemonDetail(id: Int): PokemonDetail = throw NotImplementedError()
             override suspend fun getPokemonDetailByName(name: String): PokemonDetail = throw NotImplementedError()
-        })
-        viewModel = PokemonListViewModel(emptyUseCase)
+        }
+        val pagingSource = PokemonPagingSource(failingRepository)
 
-        // When
-        advanceUntilIdle()
+        val result = pagingSource.load(
+            PagingSource.LoadParams.Refresh(
+                key = null,
+                loadSize = 20,
+                placeholdersEnabled = false
+            )
+        )
 
-        // Then
-        val state = viewModel.uiState.value
-        assertEquals(PokemonListUiState.Empty, state)
+        assertTrue(result is PagingSource.LoadResult.Error)
+        val errorResult = result as PagingSource.LoadResult.Error
+        assertEquals("Network Error", errorResult.throwable.message)
     }
 }
 

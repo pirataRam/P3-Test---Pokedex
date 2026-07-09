@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -18,18 +20,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.p3test_pokedex.presentation.list.PokemonListUiState
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.example.p3test_pokedex.domain.model.Pokemon
 import com.example.p3test_pokedex.presentation.list.PokemonListViewModel
 
 /**
- * Main Composable that observes the PokemonListViewModel and renders states accordingly.
+ * Main Composable that observes the PokemonListViewModel and renders states accordingly using Paging3.
  *
  * @param viewModel The PokemonListViewModel state provider.
  * @param onPokemonClick Callback when a Pokémon card is clicked, returning its ID.
@@ -41,29 +44,26 @@ fun PokemonListScreen(
     onPokemonClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val lazyPokemonItems = viewModel.pokemonPagingDataFlow.collectAsLazyPagingItems()
     PokemonListScreen(
-        uiState = uiState,
+        lazyPokemonItems = lazyPokemonItems,
         onPokemonClick = onPokemonClick,
-        onRetry = { viewModel.loadPokemonList() },
         modifier = modifier
     )
 }
 
 /**
- * Stateless implementation of the Pokémon list screen.
+ * Stateless implementation of the Pokémon list screen with infinite scroll / Paging3 support.
  *
- * @param uiState The current Pokémon list state.
+ * @param lazyPokemonItems The lazy paging items of Pokémon.
  * @param onPokemonClick Callback when a Pokémon card is clicked, returning its ID.
- * @param onRetry Callback when the user requests to retry loading data.
  * @param modifier The modifier to be applied to the layout.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonListScreen(
-    uiState: PokemonListUiState,
+    lazyPokemonItems: LazyPagingItems<Pokemon>,
     onPokemonClick: (Int) -> Unit,
-    onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -89,8 +89,11 @@ fun PokemonListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            when (uiState) {
-                is PokemonListUiState.Loading -> {
+            val refreshState = lazyPokemonItems.loadState.refresh
+
+            when {
+                refreshState is LoadState.Loading -> {
+                    // Initial loader shimmer effect
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         contentPadding = PaddingValues(16.dp),
@@ -110,29 +113,14 @@ fun PokemonListScreen(
                         }
                     }
                 }
-                is PokemonListUiState.Success -> {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(uiState.pokemonList, key = { it.id }) { pokemon ->
-                            PokemonCard(
-                                pokemon = pokemon,
-                                onClick = { onPokemonClick(pokemon.id) }
-                            )
-                        }
-                    }
-                }
-                is PokemonListUiState.Error -> {
+                refreshState is LoadState.Error -> {
+                    val error = refreshState.error
                     ErrorStateView(
-                        message = uiState.message,
-                        onRetry = onRetry
+                        message = error.localizedMessage ?: "Failed to fetch Pokémon list",
+                        onRetry = { lazyPokemonItems.retry() }
                     )
                 }
-                is PokemonListUiState.Empty -> {
+                refreshState is LoadState.NotLoading && lazyPokemonItems.itemCount == 0 -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -142,6 +130,62 @@ fun PokemonListScreen(
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                    }
+                }
+                else -> {
+                    // Success list with appending infinite scroll loader
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(
+                            count = lazyPokemonItems.itemCount,
+                            key = { index ->
+                                val pokemon = lazyPokemonItems[index]
+                                pokemon?.id ?: index
+                            }
+                        ) { index ->
+                            val pokemon = lazyPokemonItems[index]
+                            if (pokemon != null) {
+                                PokemonCard(
+                                    pokemon = pokemon,
+                                    onClick = { onPokemonClick(pokemon.id) }
+                                )
+                            }
+                        }
+
+                        // Bottom progress/error indicators for infinite scroll
+                        val appendState = lazyPokemonItems.loadState.append
+                        if (appendState is LoadState.Loading) {
+                            item(span = { GridItemSpan(2) }) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        } else if (appendState is LoadState.Error) {
+                            item(span = { GridItemSpan(2) }) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Button(onClick = { lazyPokemonItems.retry() }) {
+                                        Text("Retry")
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

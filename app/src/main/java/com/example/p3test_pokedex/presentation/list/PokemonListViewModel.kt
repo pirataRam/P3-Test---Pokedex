@@ -2,55 +2,25 @@ package com.example.p3test_pokedex.presentation.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.example.p3test_pokedex.domain.model.Pokemon
-import com.example.p3test_pokedex.domain.usecase.GetPokemonListUseCase
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-
-/**
- * Represent states of the Pokémon List Screen.
- */
-sealed interface PokemonListUiState {
-    data object Loading : PokemonListUiState
-    data class Success(val pokemonList: List<Pokemon>) : PokemonListUiState
-    data class Error(val message: String) : PokemonListUiState
-    data object Empty : PokemonListUiState
-}
+import com.example.p3test_pokedex.domain.usecase.GetPokemonListPagedUseCase
+import kotlinx.coroutines.flow.Flow
 
 /**
  * ViewModel for managing the Pokémon list state and actions.
+ * Exposes a Flow of PagingData using Paging3.
  *
- * @property getPokemonListUseCase Use case for fetching the list of Pokémon.
+ * @property getPokemonListPagedUseCase Use case for fetching the paginated flow of Pokémon.
  */
 class PokemonListViewModel(
-    private val getPokemonListUseCase: GetPokemonListUseCase
+    private val getPokemonListPagedUseCase: GetPokemonListPagedUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<PokemonListUiState>(PokemonListUiState.Loading)
-    val uiState: StateFlow<PokemonListUiState> = _uiState.asStateFlow()
-
-    init {
-        loadPokemonList()
-    }
-
     /**
-     * Loads the initial list of Pokémon (limit 20, offset 0).
+     * Flow of PagingData emitting Pokémon items, cached in the ViewModel scope.
      */
-    fun loadPokemonList() {
-        viewModelScope.launch {
-            _uiState.value = PokemonListUiState.Loading
-            try {
-                val list = getPokemonListUseCase(limit = 20, offset = 0)
-                if (list.isEmpty()) {
-                    _uiState.value = PokemonListUiState.Empty
-                } else {
-                    _uiState.value = PokemonListUiState.Success(list)
-                }
-            } catch (e: Exception) {
-                _uiState.value = PokemonListUiState.Error(e.localizedMessage ?: "Failed to fetch Pokémon list")
-            }
-        }
-    }
+    val pokemonPagingDataFlow: Flow<PagingData<Pokemon>> = getPokemonListPagedUseCase()
+        .cachedIn(viewModelScope)
 }
