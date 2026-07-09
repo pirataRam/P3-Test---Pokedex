@@ -2,6 +2,7 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.kotlin.serialization)
+  id("kotlin-kapt")
 }
 
 android {
@@ -81,4 +82,26 @@ dependencies {
   implementation(libs.androidx.navigation3.ui)
   implementation(libs.androidx.navigation3.runtime)
   implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+
+  // Koin DI
+  implementation(libs.koin.android)
+  implementation(libs.koin.compose)
+
+  // Retrofit & OkHttp
+  implementation(libs.retrofit)
+  implementation(libs.retrofit.gson)
+  implementation(libs.okhttp.logging)
+
+  // Room Database
+  implementation(libs.room.runtime)
+  implementation(libs.room.ktx)
+  kapt(libs.room.compiler)
+
+  // Coil Images
+  implementation(libs.coil.compose)
+
+  // Fragment & Fragment Navigation
+  implementation(libs.fragment.ktx)
+  implementation(libs.navigation.fragment)
+  implementation(libs.navigation.ui)
 }
