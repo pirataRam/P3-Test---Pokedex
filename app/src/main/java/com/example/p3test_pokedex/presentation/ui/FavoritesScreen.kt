@@ -46,11 +46,11 @@ fun FavoritesScreen(
                 Text(
                     text = "Mis Favoritos",
                     fontWeight = FontWeight.Bold,
-                    color = Color.DarkGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color(0xFFF2F2F7)
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
             )
         )
 

@@ -169,14 +169,14 @@ fun PokemonDetailScreen(
                             Icon(
                                 imageVector = Icons.Filled.Star,
                                 contentDescription = "Favorito",
-                                tint = if (isFavorite) Color.Yellow else Color.Gray.copy(alpha = 0.5f)
+                                tint = if (isFavorite) Color.Yellow else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                             )
                         }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFF2F2F7),
-                    titleContentColor = Color.DarkGray
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
         }
