@@ -8,7 +8,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.p3test_pokedex.presentation.ui.PokemonDetailScreen
-import com.example.p3test_pokedex.theme.P3TestPokedexTheme
+import com.example.p3test_pokedex.presentation.theme.P3TestPokedexTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**

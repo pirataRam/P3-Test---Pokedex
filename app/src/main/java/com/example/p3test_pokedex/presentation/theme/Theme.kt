@@ -1,4 +1,4 @@
-package com.example.p3test_pokedex.theme
+package com.example.p3test_pokedex.presentation.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

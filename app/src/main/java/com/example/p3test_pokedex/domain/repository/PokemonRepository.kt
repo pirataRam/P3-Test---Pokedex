@@ -32,4 +32,24 @@ interface PokemonRepository {
      * @return The [PokemonDetail] object.
      */
     suspend fun getPokemonDetailByName(name: String): PokemonDetail
+
+    /**
+     * Retrieves the list of all favorite Pokémon.
+     */
+    suspend fun getFavorites(): List<Pokemon>
+
+    /**
+     * Adds a Pokémon to the favorites list.
+     */
+    suspend fun addFavorite(pokemon: Pokemon)
+
+    /**
+     * Removes a Pokémon from the favorites list by its ID.
+     */
+    suspend fun removeFavorite(id: Int)
+
+    /**
+     * Checks if a Pokémon is marked as a favorite.
+     */
+    suspend fun isFavorite(id: Int): Boolean
 }

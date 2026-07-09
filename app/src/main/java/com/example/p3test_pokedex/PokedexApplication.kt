@@ -1,8 +1,7 @@
 package com.example.p3test_pokedex
 
 import android.app.Application
-import com.example.p3test_pokedex.data.di.dataModule
-import com.example.p3test_pokedex.presentation.di.presentationModule
+import com.example.p3test_pokedex.core.di.coreModules
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -17,12 +16,7 @@ class PokedexApplication : Application() {
         startKoin {
             androidLogger()
             androidContext(this@PokedexApplication)
-            modules(
-                listOf(
-                    dataModule,
-                    presentationModule
-                )
-            )
+            modules(coreModules)
         }
     }
 }

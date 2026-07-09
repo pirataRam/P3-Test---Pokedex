@@ -1,4 +1,4 @@
-package com.example.p3test_pokedex.theme
+package com.example.p3test_pokedex.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

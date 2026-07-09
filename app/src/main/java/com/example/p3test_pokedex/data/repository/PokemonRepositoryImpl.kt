@@ -9,6 +9,8 @@ import com.example.p3test_pokedex.domain.model.PokemonDetail
 import com.example.p3test_pokedex.domain.model.PokemonStat
 import com.example.p3test_pokedex.domain.repository.PokemonRepository
 
+import com.example.p3test_pokedex.data.local.entity.FavoritePokemonEntity
+
 /**
  * Implementation of [PokemonRepository] that provides caching functionality
  * using a local Room Database and network fetching using a Retrofit API service.
@@ -17,6 +19,30 @@ class PokemonRepositoryImpl(
     private val apiService: PokeApiService,
     private val pokemonDao: PokemonDao
 ) : PokemonRepository {
+
+    override suspend fun getFavorites(): List<Pokemon> {
+        return pokemonDao.getFavorites().map {
+            Pokemon(it.id, it.name, it.imageUrl)
+        }
+    }
+
+    override suspend fun addFavorite(pokemon: Pokemon) {
+        pokemonDao.insertFavorite(
+            FavoritePokemonEntity(
+                id = pokemon.id,
+                name = pokemon.name,
+                imageUrl = pokemon.imageUrl
+            )
+        )
+    }
+
+    override suspend fun removeFavorite(id: Int) {
+        pokemonDao.deleteFavorite(id)
+    }
+
+    override suspend fun isFavorite(id: Int): Boolean {
+        return pokemonDao.isFavorite(id)
+    }
 
     override suspend fun getPokemonList(limit: Int, offset: Int): List<Pokemon> {
         val cached = pokemonDao.getPokemonList(limit, offset)

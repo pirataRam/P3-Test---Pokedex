@@ -5,9 +5,13 @@ import com.example.p3test_pokedex.data.paging.PokemonPagingSource
 import com.example.p3test_pokedex.domain.model.Pokemon
 import com.example.p3test_pokedex.domain.model.PokemonDetail
 import com.example.p3test_pokedex.domain.repository.PokemonRepository
+import com.example.p3test_pokedex.domain.usecase.FakePokemonRepository
+import com.example.p3test_pokedex.domain.usecase.GetFavoriteListUseCase
+import com.example.p3test_pokedex.domain.usecase.GetPokemonDetailUseCase
 import com.example.p3test_pokedex.domain.usecase.GetPokemonListPagedUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -28,6 +32,8 @@ class PokemonListViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private val fakeRepository = FakePokemonRepository()
     private val getPokemonListPagedUseCase = GetPokemonListPagedUseCase(fakeRepository)
+    private val getPokemonDetailUseCase = GetPokemonDetailUseCase(fakeRepository)
+    private val getFavoriteListUseCase = GetFavoriteListUseCase(fakeRepository)
     private lateinit var viewModel: PokemonListViewModel
 
     @Before
@@ -42,7 +48,11 @@ class PokemonListViewModelTest {
 
     @Test
     fun `viewModel exposes paging flow successfully`() = runTest(testDispatcher) {
-        viewModel = PokemonListViewModel(getPokemonListPagedUseCase)
+        viewModel = PokemonListViewModel(
+            getPokemonListPagedUseCase,
+            getPokemonDetailUseCase,
+            getFavoriteListUseCase
+        )
         val flow = viewModel.pokemonPagingDataFlow
         assertNotNull(flow)
     }
@@ -64,7 +74,7 @@ class PokemonListViewModelTest {
         assertEquals(3, page.data.size)
         assertEquals("bulbasaur", page.data[0].name)
         assertEquals(null, page.prevKey)
-        assertEquals(null, page.nextKey) // Since response size (3) is less than loadSize (20)
+        assertEquals(null, page.nextKey)
     }
 
     @Test
@@ -75,6 +85,10 @@ class PokemonListViewModelTest {
             }
             override suspend fun getPokemonDetail(id: Int): PokemonDetail = throw NotImplementedError()
             override suspend fun getPokemonDetailByName(name: String): PokemonDetail = throw NotImplementedError()
+            override suspend fun getFavorites(): List<Pokemon> = throw NotImplementedError()
+            override suspend fun addFavorite(pokemon: Pokemon) = throw NotImplementedError()
+            override suspend fun removeFavorite(id: Int) = throw NotImplementedError()
+            override suspend fun isFavorite(id: Int): Boolean = throw NotImplementedError()
         }
         val pagingSource = PokemonPagingSource(failingRepository)
 
@@ -90,27 +104,43 @@ class PokemonListViewModelTest {
         val errorResult = result as PagingSource.LoadResult.Error
         assertEquals("Network Error", errorResult.throwable.message)
     }
-}
 
-/**
- * Fake repository implementation for testing.
- */
-private class FakePokemonRepository : PokemonRepository {
-    private val fakeList = listOf(
-        Pokemon(1, "bulbasaur", "https://example.com/1.png"),
-        Pokemon(2, "ivysaur", "https://example.com/2.png"),
-        Pokemon(3, "venusaur", "https://example.com/3.png")
-    )
+    @Test
+    fun `viewModel searches successfully and exposes Success state`() = runTest(testDispatcher) {
+        viewModel = PokemonListViewModel(
+            getPokemonListPagedUseCase,
+            getPokemonDetailUseCase,
+            getFavoriteListUseCase
+        )
 
-    override suspend fun getPokemonList(limit: Int, offset: Int): List<Pokemon> {
-        return fakeList
+        // When
+        viewModel.onSearchQueryChanged("pikachu")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        assertTrue(viewModel.searchResultState.value is SearchResultState.Success)
+        val successState = viewModel.searchResultState.value as SearchResultState.Success
+        assertEquals("pikachu", successState.pokemon.name)
     }
 
-    override suspend fun getPokemonDetail(id: Int): PokemonDetail {
-        throw NotImplementedError()
-    }
+    @Test
+    fun `viewModel loads favorites list successfully`() = runTest(testDispatcher) {
+        viewModel = PokemonListViewModel(
+            getPokemonListPagedUseCase,
+            getPokemonDetailUseCase,
+            getFavoriteListUseCase
+        )
 
-    override suspend fun getPokemonDetailByName(name: String): PokemonDetail {
-        throw NotImplementedError()
+        // Given
+        val fav = Pokemon(25, "pikachu", "https://example.com/25.png")
+        fakeRepository.addFavorite(fav)
+
+        // When
+        viewModel.loadFavorites()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        assertEquals(1, viewModel.favoritesList.value.size)
+        assertEquals(fav, viewModel.favoritesList.value.first())
     }
 }

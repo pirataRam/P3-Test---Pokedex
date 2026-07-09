@@ -8,6 +8,8 @@ import com.example.p3test_pokedex.data.local.dao.PokemonDao
 import com.example.p3test_pokedex.data.local.entity.PokemonDetailEntity
 import com.example.p3test_pokedex.data.local.entity.PokemonEntity
 
+import com.example.p3test_pokedex.data.local.entity.FavoritePokemonEntity
+
 /**
  * Main application database using Room.
  *
@@ -16,9 +18,10 @@ import com.example.p3test_pokedex.data.local.entity.PokemonEntity
 @Database(
     entities = [
         PokemonEntity::class,
-        PokemonDetailEntity::class
+        PokemonDetailEntity::class,
+        FavoritePokemonEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

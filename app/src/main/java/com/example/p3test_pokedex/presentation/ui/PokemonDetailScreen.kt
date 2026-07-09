@@ -2,6 +2,7 @@ package com.example.p3test_pokedex.presentation.ui
 
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -34,21 +37,28 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.p3test_pokedex.domain.model.Pokemon
 import com.example.p3test_pokedex.domain.model.PokemonDetail
 import com.example.p3test_pokedex.presentation.detail.PokemonDetailUiState
 import com.example.p3test_pokedex.presentation.detail.PokemonDetailViewModel
@@ -58,11 +68,6 @@ import java.util.Locale
  * Main Pokémon detail screen container that hooks up ViewModel StateFlow to the stateless view.
  * It also manages a MediaPlayer instance for reproducing Pokémon cries and a HorizontalPager
  * for swiping left (previous Pokémon) and right (next Pokémon).
- *
- * @param viewModel The PokemonDetailViewModel.
- * @param pokemonId The unique identifier of the initial Pokémon.
- * @param onBackClick Callback triggered when user navigates back.
- * @param modifier The modifier to be applied to the layout.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,8 +77,6 @@ fun PokemonDetailScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Standard National Pokédex limit in generation 9 is 1025.
-    // We map pokemonId (1-based index) to page index (0-based).
     val pagerState = rememberPagerState(
         initialPage = (pokemonId - 1).coerceAtLeast(0),
         pageCount = { 1025 }
@@ -86,6 +89,9 @@ fun PokemonDetailScreen(
     }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    var showConfirmationDialog by remember { mutableStateOf(false) }
 
     // Remember a MediaPlayer instance that will be released automatically when disposed
     val mediaPlayer = remember { MediaPlayer() }
@@ -119,13 +125,42 @@ fun PokemonDetailScreen(
         }
     }
 
+    // Get current loaded Pokemon details if Success
+    val currentDetail = (uiState as? PokemonDetailUiState.Success)?.pokemonDetail
+
+    // Confirmation dialog for removing favorite
+    if (showConfirmationDialog && currentDetail != null) {
+        AlertDialog(
+            onDismissRequest = { showConfirmationDialog = false },
+            title = { Text(text = "Remover de favoritos") },
+            text = { Text(text = "¿Desea remover este pokémon, de mi lista de favoritos?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.removeFromFavorites(currentDetail.id)
+                        showConfirmationDialog = false
+                    }
+                ) {
+                    Text(text = "Sí")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showConfirmationDialog = false }
+                ) {
+                    Text(text = "No")
+                }
+            }
+        )
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Details",
+                        text = "Detalles",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -135,6 +170,36 @@ fun PokemonDetailScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
+                    }
+                },
+                actions = {
+                    if (currentDetail != null) {
+                        IconButton(
+                            onClick = {
+                                if (isFavorite) {
+                                    showConfirmationDialog = true
+                                } else {
+                                    viewModel.addToFavorites(
+                                        Pokemon(
+                                            id = currentDetail.id,
+                                            name = currentDetail.name,
+                                            imageUrl = currentDetail.imageUrl
+                                        )
+                                    )
+                                    Toast.makeText(
+                                        context,
+                                        "Pokémon ${currentDetail.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }} Agregado a Favoritos",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = "Favorito",
+                                tint = if (isFavorite) Color.Yellow else Color.Gray.copy(alpha = 0.5f)
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -154,7 +219,6 @@ fun PokemonDetailScreen(
 
             when (val state = uiState) {
                 is PokemonDetailUiState.Success -> {
-                    // Only show the details if they match the currently swiped page targetId
                     if (state.pokemonDetail.id == targetId) {
                         PokemonDetailContent(
                             pokemon = state.pokemonDetail,
@@ -221,10 +285,6 @@ fun PokemonDetailShimmer() {
 
 /**
  * Stateless detailed content view of a successfully loaded Pokémon.
- *
- * @param pokemon The loaded PokemonDetail domain object.
- * @param onPlayCry Callback trigger to play OGG sound from URL.
- * @param onRetry Callback when re-fetching is requested.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -321,7 +381,7 @@ fun PokemonDetailContent(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Weight",
+                        text = "Peso",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -333,7 +393,7 @@ fun PokemonDetailContent(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Height",
+                        text = "Altura",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -357,7 +417,7 @@ fun PokemonDetailContent(
 
         // Stats Title
         Text(
-            text = "Base Stats",
+            text = "Estadísticas base",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.Start)
@@ -379,7 +439,7 @@ fun PokemonDetailContent(
 
         // Abilities Title
         Text(
-            text = "Abilities",
+            text = "Habilidades",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.Start)

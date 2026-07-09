@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.p3test_pokedex.data.local.entity.PokemonDetailEntity
 import com.example.p3test_pokedex.data.local.entity.PokemonEntity
+import com.example.p3test_pokedex.data.local.entity.FavoritePokemonEntity
 
 /**
  * Data Access Object for local Pokemon and PokemonDetail operations.
@@ -56,4 +57,28 @@ interface PokemonDao {
      */
     @Query("SELECT * FROM pokemon_detail WHERE name = :name")
     suspend fun getPokemonDetailByName(name: String): PokemonDetailEntity?
+
+    /**
+     * Inserts a favorite Pokémon.
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFavorite(favorite: FavoritePokemonEntity)
+
+    /**
+     * Deletes a favorite Pokémon by its ID.
+     */
+    @Query("DELETE FROM favorite_pokemon WHERE id = :id")
+    suspend fun deleteFavorite(id: Int)
+
+    /**
+     * Checks if a Pokémon is marked as favorite.
+     */
+    @Query("SELECT EXISTS(SELECT 1 FROM favorite_pokemon WHERE id = :id)")
+    suspend fun isFavorite(id: Int): Boolean
+
+    /**
+     * Retrieves the list of all favorite Pokémon.
+     */
+    @Query("SELECT * FROM favorite_pokemon ORDER BY id ASC")
+    suspend fun getFavorites(): List<FavoritePokemonEntity>
 }
