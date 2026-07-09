@@ -4,7 +4,9 @@ import androidx.paging.PagingSource
 import com.example.p3test_pokedex.data.paging.PokemonPagingSource
 import com.example.p3test_pokedex.domain.model.Pokemon
 import com.example.p3test_pokedex.domain.model.PokemonDetail
+import com.example.p3test_pokedex.domain.repository.NetworkMonitor
 import com.example.p3test_pokedex.domain.repository.PokemonRepository
+import com.example.p3test_pokedex.domain.usecase.CheckInternetConnectionUseCase
 import com.example.p3test_pokedex.domain.usecase.FakePokemonRepository
 import com.example.p3test_pokedex.domain.usecase.GetFavoriteListUseCase
 import com.example.p3test_pokedex.domain.usecase.GetPokemonDetailUseCase
@@ -15,6 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -34,11 +37,20 @@ class PokemonListViewModelTest {
     private val getPokemonListPagedUseCase = GetPokemonListPagedUseCase(fakeRepository)
     private val getPokemonDetailUseCase = GetPokemonDetailUseCase(fakeRepository)
     private val getFavoriteListUseCase = GetFavoriteListUseCase(fakeRepository)
+    
+    // Fake network monitor that returns true by default
+    private var isConnected = true
+    private val fakeNetworkMonitor = object : NetworkMonitor {
+        override fun isConnected(): Boolean = this@PokemonListViewModelTest.isConnected
+    }
+    private val checkInternetConnectionUseCase = CheckInternetConnectionUseCase(fakeNetworkMonitor)
+    
     private lateinit var viewModel: PokemonListViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        isConnected = true
     }
 
     @After
@@ -51,7 +63,8 @@ class PokemonListViewModelTest {
         viewModel = PokemonListViewModel(
             getPokemonListPagedUseCase,
             getPokemonDetailUseCase,
-            getFavoriteListUseCase
+            getFavoriteListUseCase,
+            checkInternetConnectionUseCase
         )
         val flow = viewModel.pokemonPagingDataFlow
         assertNotNull(flow)
@@ -110,7 +123,8 @@ class PokemonListViewModelTest {
         viewModel = PokemonListViewModel(
             getPokemonListPagedUseCase,
             getPokemonDetailUseCase,
-            getFavoriteListUseCase
+            getFavoriteListUseCase,
+            checkInternetConnectionUseCase
         )
 
         // When
@@ -128,7 +142,8 @@ class PokemonListViewModelTest {
         viewModel = PokemonListViewModel(
             getPokemonListPagedUseCase,
             getPokemonDetailUseCase,
-            getFavoriteListUseCase
+            getFavoriteListUseCase,
+            checkInternetConnectionUseCase
         )
 
         // Given
@@ -142,5 +157,52 @@ class PokemonListViewModelTest {
         // Then
         assertEquals(1, viewModel.favoritesList.value.size)
         assertEquals(fav, viewModel.favoritesList.value.first())
+    }
+
+    @Test
+    fun `onPokemonClicked when connected emits navigation event`() = runTest(testDispatcher) {
+        viewModel = PokemonListViewModel(
+            getPokemonListPagedUseCase,
+            getPokemonDetailUseCase,
+            getFavoriteListUseCase,
+            checkInternetConnectionUseCase
+        )
+        
+        isConnected = true
+        var emittedId: Int? = null
+        
+        // Listen to navigation events
+        val job = launch {
+            viewModel.navigateToDetail.collect { id ->
+                emittedId = id
+            }
+        }
+
+        // When
+        viewModel.onPokemonClicked(25, isFavoriteTab = false)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        assertEquals(25, emittedId)
+        job.cancel()
+    }
+
+    @Test
+    fun `onPokemonClicked when disconnected shows no internet dialog`() = runTest(testDispatcher) {
+        viewModel = PokemonListViewModel(
+            getPokemonListPagedUseCase,
+            getPokemonDetailUseCase,
+            getFavoriteListUseCase,
+            checkInternetConnectionUseCase
+        )
+        
+        isConnected = false
+
+        // When
+        viewModel.onPokemonClicked(25, isFavoriteTab = false)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        assertTrue(viewModel.showNoInternetDialog.value)
     }
 }

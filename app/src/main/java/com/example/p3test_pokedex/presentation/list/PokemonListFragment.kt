@@ -1,9 +1,6 @@
 package com.example.p3test_pokedex.presentation.list
 
-import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.provider.Settings
 import android.view.LayoutInflater
@@ -51,7 +48,8 @@ enum class MainTab {
 /**
  * Fragment hosting the Pokémon List Screen and Favorites Screen inside a Bottom Navigation.
  * Uses Koin to inject the ViewModel and Navigation Controller to navigate on card click.
- * Validates internet connection before navigating from Pokedex, but allows offline details for favorites.
+ * All logic for checking network states is delegated to the Use Cases and ViewModel,
+ * keeping this UI layer strictly visual and state-bound.
  */
 class PokemonListFragment : Fragment() {
 
@@ -67,12 +65,23 @@ class PokemonListFragment : Fragment() {
                 P3TestPokedexTheme {
                     var currentTab by remember { mutableStateOf(MainTab.Pokedex) }
                     val favorites by viewModel.favoritesList.collectAsState()
-                    var showNoInternetDialog by remember { mutableStateOf(false) }
+                    val showNoInternetDialog by viewModel.showNoInternetDialog.collectAsState()
                     val context = LocalContext.current
 
                     LaunchedEffect(currentTab) {
                         if (currentTab == MainTab.Favorites) {
                             viewModel.loadFavorites()
+                        }
+                    }
+
+                    // Collect single-time navigation actions emitted by ViewModel
+                    LaunchedEffect(Unit) {
+                        viewModel.navigateToDetail.collect { id ->
+                            val bundle = bundleOf("pokemonId" to id)
+                            findNavController().navigate(
+                                R.id.action_pokemonListFragment_to_pokemonDetailFragment,
+                                bundle
+                            )
                         }
                     }
 
@@ -100,7 +109,7 @@ class PokemonListFragment : Fragment() {
                                             }
                                             context.startActivity(intent)
                                         }
-                                        showNoInternetDialog = false
+                                        viewModel.onDismissNoInternetDialog()
                                     }
                                 ) {
                                     Text("Ir a Ajustes")
@@ -108,7 +117,7 @@ class PokemonListFragment : Fragment() {
                             },
                             dismissButton = {
                                 TextButton(
-                                    onClick = { showNoInternetDialog = false }
+                                    onClick = { viewModel.onDismissNoInternetDialog() }
                                 ) {
                                     Text("Aceptar")
                                 }
@@ -140,15 +149,7 @@ class PokemonListFragment : Fragment() {
                                     PokemonListScreen(
                                         viewModel = viewModel,
                                         onPokemonClick = { id ->
-                                            if (isInternetAvailable(context)) {
-                                                val bundle = bundleOf("pokemonId" to id)
-                                                findNavController().navigate(
-                                                    R.id.action_pokemonListFragment_to_pokemonDetailFragment,
-                                                    bundle
-                                                )
-                                            } else {
-                                                showNoInternetDialog = true
-                                            }
+                                            viewModel.onPokemonClicked(id, isFavoriteTab = false)
                                         }
                                     )
                                 }
@@ -156,12 +157,7 @@ class PokemonListFragment : Fragment() {
                                     FavoritesScreen(
                                         favorites = favorites,
                                         onPokemonClick = { id ->
-                                            // Navigation from favorites does NOT validate internet connection!
-                                            val bundle = bundleOf("pokemonId" to id)
-                                            findNavController().navigate(
-                                                R.id.action_pokemonListFragment_to_pokemonDetailFragment,
-                                                bundle
-                                            )
+                                            viewModel.onPokemonClicked(id, isFavoriteTab = true)
                                         }
                                     )
                                 }
@@ -171,15 +167,5 @@ class PokemonListFragment : Fragment() {
                 }
             }
         }
-    }
-
-    /**
-     * Checks if there is an active network connection with internet capability.
-     */
-    private fun isInternetAvailable(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = connectivityManager.activeNetwork ?: return false
-        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
-        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 }

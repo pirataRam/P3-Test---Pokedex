@@ -5,12 +5,16 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.p3test_pokedex.domain.model.Pokemon
+import com.example.p3test_pokedex.domain.usecase.CheckInternetConnectionUseCase
 import com.example.p3test_pokedex.domain.usecase.GetFavoriteListUseCase
 import com.example.p3test_pokedex.domain.usecase.GetPokemonDetailUseCase
 import com.example.p3test_pokedex.domain.usecase.GetPokemonListPagedUseCase
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
@@ -30,7 +34,8 @@ sealed interface SearchResultState {
 class PokemonListViewModel(
     private val getPokemonListPagedUseCase: GetPokemonListPagedUseCase,
     private val getPokemonDetailUseCase: GetPokemonDetailUseCase,
-    private val getFavoriteListUseCase: GetFavoriteListUseCase
+    private val getFavoriteListUseCase: GetFavoriteListUseCase,
+    private val checkInternetConnectionUseCase: CheckInternetConnectionUseCase
 ) : ViewModel() {
 
     // Paginated list flow (Infinite Scroll) using Paging3
@@ -49,8 +54,39 @@ class PokemonListViewModel(
     private val _favoritesList = MutableStateFlow<List<Pokemon>>(emptyList())
     val favoritesList: StateFlow<List<Pokemon>> = _favoritesList.asStateFlow()
 
+    // Connection dialog visibility state
+    private val _showNoInternetDialog = MutableStateFlow(false)
+    val showNoInternetDialog: StateFlow<Boolean> = _showNoInternetDialog.asStateFlow()
+
+    // Shared Flow to emit single-time navigation actions to the view
+    private val _navigateToDetail = MutableSharedFlow<Int>()
+    val navigateToDetail: SharedFlow<Int> = _navigateToDetail.asSharedFlow()
+
     init {
         loadFavorites()
+    }
+
+    /**
+     * Handles Pokémon click actions. Validates internet connectivity for non-favorites.
+     *
+     * @param id The unique identifier of the clicked Pokémon.
+     * @param isFavoriteTab True if the click occurs from the favorites list.
+     */
+    fun onPokemonClicked(id: Int, isFavoriteTab: Boolean) {
+        viewModelScope.launch {
+            if (isFavoriteTab || checkInternetConnectionUseCase()) {
+                _navigateToDetail.emit(id)
+            } else {
+                _showNoInternetDialog.value = true
+            }
+        }
+    }
+
+    /**
+     * Dismisses the internet connection error dialog.
+     */
+    fun onDismissNoInternetDialog() {
+        _showNoInternetDialog.value = false
     }
 
     /**

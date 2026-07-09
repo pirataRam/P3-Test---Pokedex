@@ -5,6 +5,9 @@ import com.example.p3test_pokedex.data.local.AppDatabase
 import com.example.p3test_pokedex.data.remote.PokeApiService
 import com.example.p3test_pokedex.data.repository.PokemonRepositoryImpl
 import com.example.p3test_pokedex.domain.repository.PokemonRepository
+import com.example.p3test_pokedex.domain.repository.NetworkMonitor
+import com.example.p3test_pokedex.data.network.NetworkMonitorImpl
+import com.example.p3test_pokedex.domain.usecase.CheckInternetConnectionUseCase
 import com.example.p3test_pokedex.domain.usecase.AddFavoriteUseCase
 import com.example.p3test_pokedex.domain.usecase.GetFavoriteListUseCase
 import com.example.p3test_pokedex.domain.usecase.GetPokemonDetailUseCase
@@ -47,6 +50,8 @@ val networkModule = module {
     single {
         get<Retrofit>().create(PokeApiService::class.java)
     }
+
+    single<NetworkMonitor> { NetworkMonitorImpl(androidContext()) }
 }
 
 val databaseModule = module {
@@ -80,10 +85,11 @@ val useCaseModule = module {
     factory { IsFavoriteUseCase(get()) }
     factory { AddFavoriteUseCase(get()) }
     factory { RemoveFavoriteUseCase(get()) }
+    factory { CheckInternetConnectionUseCase(get()) }
 }
 
 val viewModelModule = module {
-    viewModel { PokemonListViewModel(get(), get(), get()) }
+    viewModel { PokemonListViewModel(get(), get(), get(), get()) }
     viewModel { PokemonDetailViewModel(get(), get(), get(), get()) }
 }
 
