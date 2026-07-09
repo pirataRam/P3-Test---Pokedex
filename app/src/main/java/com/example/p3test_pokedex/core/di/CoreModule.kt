@@ -26,7 +26,10 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 val networkModule = module {
     single {
+        val cacheSize = 50 * 1024 * 1024L // 50 MiB
+        val cacheDir = java.io.File(androidContext().cacheDir, "http_cache")
         OkHttpClient.Builder()
+            .cache(okhttp3.Cache(cacheDir, cacheSize))
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })

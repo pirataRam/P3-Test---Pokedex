@@ -1,6 +1,11 @@
 package com.example.p3test_pokedex.presentation.list
 
+import android.content.Context
+import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,11 +14,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -22,6 +29,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -42,6 +51,7 @@ enum class MainTab {
 /**
  * Fragment hosting the Pokémon List Screen and Favorites Screen inside a Bottom Navigation.
  * Uses Koin to inject the ViewModel and Navigation Controller to navigate on card click.
+ * Validates internet connection before navigating from Pokedex, but allows offline details for favorites.
  */
 class PokemonListFragment : Fragment() {
 
@@ -57,11 +67,53 @@ class PokemonListFragment : Fragment() {
                 P3TestPokedexTheme {
                     var currentTab by remember { mutableStateOf(MainTab.Pokedex) }
                     val favorites by viewModel.favoritesList.collectAsState()
+                    var showNoInternetDialog by remember { mutableStateOf(false) }
+                    val context = LocalContext.current
 
                     LaunchedEffect(currentTab) {
                         if (currentTab == MainTab.Favorites) {
                             viewModel.loadFavorites()
                         }
+                    }
+
+                    // Non-cancelable No Internet Connection Dialog
+                    if (showNoInternetDialog) {
+                        AlertDialog(
+                            onDismissRequest = { /* Non-cancelable */ },
+                            properties = DialogProperties(
+                                dismissOnBackPress = false,
+                                dismissOnClickOutside = false
+                            ),
+                            title = { Text(text = "Sin conexión a internet") },
+                            text = { Text(text = "No estás conectado. Conéctate a internet para reintentarlo.") },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        try {
+                                            val intent = Intent(Settings.ACTION_WIFI_SETTINGS).apply {
+                                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                            }
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
+                                            val intent = Intent(Settings.ACTION_SETTINGS).apply {
+                                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                            }
+                                            context.startActivity(intent)
+                                        }
+                                        showNoInternetDialog = false
+                                    }
+                                ) {
+                                    Text("Ir a Ajustes")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(
+                                    onClick = { showNoInternetDialog = false }
+                                ) {
+                                    Text("Aceptar")
+                                }
+                            }
+                        )
                     }
 
                     Scaffold(
@@ -88,11 +140,15 @@ class PokemonListFragment : Fragment() {
                                     PokemonListScreen(
                                         viewModel = viewModel,
                                         onPokemonClick = { id ->
-                                            val bundle = bundleOf("pokemonId" to id)
-                                            findNavController().navigate(
-                                                R.id.action_pokemonListFragment_to_pokemonDetailFragment,
-                                                bundle
-                                            )
+                                            if (isInternetAvailable(context)) {
+                                                val bundle = bundleOf("pokemonId" to id)
+                                                findNavController().navigate(
+                                                    R.id.action_pokemonListFragment_to_pokemonDetailFragment,
+                                                    bundle
+                                                )
+                                            } else {
+                                                showNoInternetDialog = true
+                                            }
                                         }
                                     )
                                 }
@@ -100,6 +156,7 @@ class PokemonListFragment : Fragment() {
                                     FavoritesScreen(
                                         favorites = favorites,
                                         onPokemonClick = { id ->
+                                            // Navigation from favorites does NOT validate internet connection!
                                             val bundle = bundleOf("pokemonId" to id)
                                             findNavController().navigate(
                                                 R.id.action_pokemonListFragment_to_pokemonDetailFragment,
@@ -114,5 +171,15 @@ class PokemonListFragment : Fragment() {
                 }
             }
         }
+    }
+
+    /**
+     * Checks if there is an active network connection with internet capability.
+     */
+    private fun isInternetAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 }
