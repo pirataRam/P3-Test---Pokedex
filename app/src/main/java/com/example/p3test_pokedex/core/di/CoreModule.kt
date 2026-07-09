@@ -66,10 +66,10 @@ val networkModule = module {
 val databaseModule = module {
     single {
         Room.databaseBuilder(
-            androidContext(),
-            AppDatabase::class.java,
-            "pokedex_database"
-        ).fallbackToDestructiveMigration()
+                androidContext(),
+                AppDatabase::class.java,
+                "pokedex_database"
+            ).fallbackToDestructiveMigration(false)
          .build()
     }
 

@@ -40,7 +40,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,10 +53,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.SubcomposeAsyncImage
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.foundation.layout.size
+import com.example.p3test_pokedex.R
 import com.example.p3test_pokedex.domain.model.Pokemon
 import com.example.p3test_pokedex.domain.model.PokemonDetail
 import com.example.p3test_pokedex.presentation.detail.PokemonDetailUiState
@@ -105,8 +106,8 @@ fun PokemonDetailScreen(
     if (showConfirmationDialog && currentDetail != null) {
         AlertDialog(
             onDismissRequest = { showConfirmationDialog = false },
-            title = { Text(text = "Remover de favoritos") },
-            text = { Text(text = "¿Desea remover este pokémon, de mi lista de favoritos?") },
+            title = { Text(text = stringResource(R.string.remove_favorite_title)) },
+            text = { Text(text = stringResource(R.string.remove_favorite_prompt)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -114,14 +115,14 @@ fun PokemonDetailScreen(
                         showConfirmationDialog = false
                     }
                 ) {
-                    Text(text = "Sí")
+                    Text(text = stringResource(R.string.yes))
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { showConfirmationDialog = false }
                 ) {
-                    Text(text = "No")
+                    Text(text = stringResource(R.string.no))
                 }
             }
         )
@@ -133,7 +134,7 @@ fun PokemonDetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Detalles",
+                        text = stringResource(R.string.details),
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -141,12 +142,14 @@ fun PokemonDetailScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
                 actions = {
                     if (currentDetail != null) {
+                        val capitalizedName = currentDetail.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                        val addedToastMsg = stringResource(R.string.pokemon_added_toast, capitalizedName)
                         IconButton(
                             onClick = {
                                 if (isFavorite) {
@@ -161,7 +164,7 @@ fun PokemonDetailScreen(
                                     )
                                     Toast.makeText(
                                         context,
-                                        "Pokémon ${currentDetail.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }} Agregado a Favoritos",
+                                        addedToastMsg,
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
@@ -169,7 +172,7 @@ fun PokemonDetailScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Star,
-                                contentDescription = "Favorito",
+                                contentDescription = stringResource(R.string.favorite_desc),
                                 tint = if (isFavorite) LocalPokedexColors.current.favoriteActive else LocalPokedexColors.current.favoriteInactive
                             )
                         }
@@ -308,13 +311,13 @@ fun PokemonDetailContent(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Warning,
-                            contentDescription = "Error de red",
+                            contentDescription = stringResource(R.string.network_error_desc),
                             tint = LocalPokedexColors.current.placeholderIcon,
                             modifier = Modifier.size(64.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "No se pudo cargar la imagen. Conéctate a internet para reintentar.",
+                            text = stringResource(R.string.no_image_error),
                             style = MaterialTheme.typography.bodyMedium,
                             color = LocalPokedexColors.current.placeholderText,
                             textAlign = TextAlign.Center
@@ -378,7 +381,7 @@ fun PokemonDetailContent(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Peso",
+                        text = stringResource(R.string.weight),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -390,7 +393,7 @@ fun PokemonDetailContent(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Altura",
+                        text = stringResource(R.string.height),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -402,7 +405,7 @@ fun PokemonDetailContent(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Base XP",
+                        text = stringResource(R.string.base_xp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -414,7 +417,7 @@ fun PokemonDetailContent(
 
         // Stats Title
         Text(
-            text = "Estadísticas base",
+            text = stringResource(R.string.base_stats),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.Start)
@@ -436,7 +439,7 @@ fun PokemonDetailContent(
 
         // Abilities Title
         Text(
-            text = "Habilidades",
+            text = stringResource(R.string.abilities),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.Start)
@@ -459,7 +462,7 @@ fun PokemonDetailContent(
 
         // Pokémon Cries Section
         Text(
-            text = "Gritos de Pokémon",
+            text = stringResource(R.string.pokemon_cries),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.Start)
@@ -480,11 +483,11 @@ fun PokemonDetailContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Reproducir Grito Moderno"
+                    contentDescription = stringResource(R.string.play_cry_modern_desc)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Moderno",
+                    text = stringResource(R.string.modern),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -499,11 +502,11 @@ fun PokemonDetailContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Reproducir Grito Retro"
+                    contentDescription = stringResource(R.string.play_cry_legacy_desc)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Retro (Legacy)",
+                    text = stringResource(R.string.legacy),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )

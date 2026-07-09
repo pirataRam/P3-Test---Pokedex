@@ -10,7 +10,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.p3test_pokedex.presentation.theme.*
+import com.example.p3test_pokedex.presentation.theme.TypeGrass
+import com.example.p3test_pokedex.presentation.theme.TypeFire
+import com.example.p3test_pokedex.presentation.theme.TypeWater
+import com.example.p3test_pokedex.presentation.theme.TypeBug
+import com.example.p3test_pokedex.presentation.theme.TypeNormal
+import com.example.p3test_pokedex.presentation.theme.TypePoison
+import com.example.p3test_pokedex.presentation.theme.TypeElectric
+import com.example.p3test_pokedex.presentation.theme.TypeGround
+import com.example.p3test_pokedex.presentation.theme.TypeFairy
+import com.example.p3test_pokedex.presentation.theme.TypeFighting
+import com.example.p3test_pokedex.presentation.theme.TypePsychic
+import com.example.p3test_pokedex.presentation.theme.TypeRock
+import com.example.p3test_pokedex.presentation.theme.TypeGhost
+import com.example.p3test_pokedex.presentation.theme.TypeIce
+import com.example.p3test_pokedex.presentation.theme.TypeDragon
+import com.example.p3test_pokedex.presentation.theme.TypeDark
+import com.example.p3test_pokedex.presentation.theme.TypeSteel
+import com.example.p3test_pokedex.presentation.theme.TypeFlying
 import java.util.Locale
 
 /**

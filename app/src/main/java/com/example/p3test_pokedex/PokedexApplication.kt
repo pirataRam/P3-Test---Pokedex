@@ -41,7 +41,7 @@ class PokedexApplication : Application(), ImageLoaderFactory, KoinComponent {
             .diskCache {
                 DiskCache.Builder()
                     .directory(this.cacheDir.resolve("image_cache"))
-                    .maxSizeBytes(100 * 1024 * 1024L) // 100 MiB Disk Cache
+                    .maxSizeBytes(300 * 1024 * 1024L) // 300 MiB Disk Cache
                     .build()
             }
             .memoryCache {

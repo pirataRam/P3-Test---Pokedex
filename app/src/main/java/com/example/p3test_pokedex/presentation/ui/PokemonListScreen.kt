@@ -33,9 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
+import com.example.p3test_pokedex.R
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.p3test_pokedex.domain.model.Pokemon
@@ -85,7 +86,7 @@ fun PokemonListScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Pokédex",
+                        text = stringResource(R.string.pokedex_tab),
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.headlineMedium
                     )
@@ -106,12 +107,12 @@ fun PokemonListScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = onSearchQueryChanged,
-                placeholder = { Text("Buscar por nombre o número...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                placeholder = { Text(stringResource(R.string.search_placeholder)) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = stringResource(R.string.search_desc)) },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { onSearchQueryChanged("") }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Limpiar")
+                            Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.clear_desc))
                         }
                     }
                 },
@@ -191,7 +192,7 @@ fun PokemonListScreen(
                         refreshState is LoadState.Error -> {
                             val error = refreshState.error
                             ErrorStateView(
-                                message = error.localizedMessage ?: "Error de red al cargar el listado",
+                                message = error.localizedMessage ?: stringResource(R.string.list_load_error),
                                 onRetry = { lazyPokemonItems.retry() }
                             )
                         }
@@ -201,7 +202,7 @@ fun PokemonListScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "No se encontraron Pokémon.",
+                                    text = stringResource(R.string.no_pokemon_found),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -254,7 +255,7 @@ fun PokemonListScreen(
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Button(onClick = { lazyPokemonItems.retry() }) {
-                                                Text("Reintentar")
+                                                Text(stringResource(R.string.retry))
                                             }
                                         }
                                     }

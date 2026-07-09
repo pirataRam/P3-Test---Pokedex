@@ -26,12 +26,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
-import androidx.compose.ui.graphics.Color
 import com.example.p3test_pokedex.presentation.theme.LocalPokedexColors
 import coil.compose.SubcomposeAsyncImage
 import com.example.p3test_pokedex.domain.model.Pokemon
 import java.util.Locale
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
+import com.example.p3test_pokedex.R
 
 /**
  * A beautiful card representing a Pokémon in the list.
@@ -83,13 +84,13 @@ fun PokemonCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Warning,
-                                contentDescription = "Error de red",
+                                contentDescription = stringResource(R.string.network_error_desc),
                                 tint = LocalPokedexColors.current.placeholderIcon,
                                 modifier = Modifier.size(36.dp)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Sin conexión",
+                                text = stringResource(R.string.no_connection),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = LocalPokedexColors.current.placeholderText,
                                 textAlign = TextAlign.Center

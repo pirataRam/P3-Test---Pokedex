@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -23,10 +22,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import com.example.p3test_pokedex.presentation.theme.LocalPokedexColors
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.p3test_pokedex.R
 import com.example.p3test_pokedex.domain.model.Pokemon
 
 /**
@@ -45,7 +46,7 @@ fun FavoritesScreen(
         TopAppBar(
             title = {
                 Text(
-                    text = "Mis Favoritos",
+                    text = stringResource(R.string.my_favorites_title),
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -67,13 +68,13 @@ fun FavoritesScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Star,
-                        contentDescription = "No favorites yet",
+                        contentDescription = stringResource(R.string.no_favorites_yet_desc),
                         tint = LocalPokedexColors.current.emptyStar,
                         modifier = Modifier.fillMaxSize(0.2f)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Aún no tienes Pokémon en favoritos",
+                        text = stringResource(R.string.no_favorites_yet_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -81,7 +82,7 @@ fun FavoritesScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Entra al detalle de cualquier Pokémon y presiona la estrella para agregarlo aquí.",
+                        text = stringResource(R.string.no_favorites_yet_instructions),
                         style = MaterialTheme.typography.bodyMedium,
                         color = LocalPokedexColors.current.emptyText,
                         textAlign = TextAlign.Center,

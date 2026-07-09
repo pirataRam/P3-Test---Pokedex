@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.p3test_pokedex.R
 
 /**
  * A beautiful error display view with a descriptive message and a retry button.
@@ -39,7 +41,7 @@ fun ErrorStateView(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Oops!",
+            text = stringResource(R.string.oops),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.error,
@@ -61,7 +63,7 @@ fun ErrorStateView(
             )
         ) {
             Text(
-                text = "Retry",
+                text = stringResource(R.string.retry),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold
             )

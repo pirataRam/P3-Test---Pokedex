@@ -18,8 +18,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import com.example.p3test_pokedex.presentation.theme.*
+import com.example.p3test_pokedex.presentation.theme.StatHP
+import com.example.p3test_pokedex.presentation.theme.StatAttack
+import com.example.p3test_pokedex.presentation.theme.StatDefense
+import com.example.p3test_pokedex.presentation.theme.StatSpecialAttack
+import com.example.p3test_pokedex.presentation.theme.StatSpecialDefense
+import com.example.p3test_pokedex.presentation.theme.StatSpeed
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
