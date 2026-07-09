@@ -27,6 +27,7 @@ El proyecto cuenta con cobertura completa de pruebas unitarias para todas las re
 *   `AddFavoriteUseCaseTest`
 *   `RemoveFavoriteUseCaseTest`
 *   `IsFavoriteUseCaseTest`
+*   `CheckInternetConnectionUseCaseTest`
 *   `PokemonListViewModelTest` (y componentes de paginado)
 
 Para ejecutar las pruebas desde consola:
