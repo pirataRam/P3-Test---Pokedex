@@ -57,12 +57,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.foundation.layout.size
 import com.example.p3test_pokedex.domain.model.Pokemon
 import com.example.p3test_pokedex.domain.model.PokemonDetail
 import com.example.p3test_pokedex.presentation.detail.PokemonDetailUiState
 import com.example.p3test_pokedex.presentation.detail.PokemonDetailViewModel
 import java.util.Locale
+import androidx.compose.ui.text.style.TextAlign
 
 /**
  * Main Pokémon detail screen container that hooks up ViewModel StateFlow to the stateless view.
@@ -203,8 +206,8 @@ fun PokemonDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                    containerColor = Color(0xFFF2F2F7),
+                    titleContentColor = Color.DarkGray
                 )
             )
         }
@@ -319,11 +322,35 @@ fun PokemonDetailContent(
                 .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = pokemon.imageUrl,
                 contentDescription = pokemon.name,
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                loading = {
+                    ShimmerLoader(modifier = Modifier.fillMaxSize())
+                },
+                error = {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize().padding(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Warning,
+                            contentDescription = "Error de red",
+                            tint = Color.Gray.copy(alpha = 0.6f),
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "No se pudo cargar la imagen. Conéctate a internet para reintentar.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             )
         }
 

@@ -101,9 +101,12 @@ class PokemonListViewModel(
                 )
                 _searchResultState.value = SearchResultState.Success(pokemon)
             } catch (e: Exception) {
-                _searchResultState.value = SearchResultState.Error(
-                    e.localizedMessage ?: "Pokémon no encontrado"
-                )
+                val errorMessage = if (e is java.io.IOException || e.localizedMessage?.contains("Unable to resolve host", ignoreCase = true) == true) {
+                    "Conéctate a internet para reintentar tu búsqueda"
+                } else {
+                    "Pokémon no encontrado. Verifica el nombre o número y vuelve a intentarlo."
+                }
+                _searchResultState.value = SearchResultState.Error(errorMessage)
             }
         }
     }

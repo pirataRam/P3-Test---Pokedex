@@ -21,9 +21,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.Color
+import coil.compose.SubcomposeAsyncImage
 import com.example.p3test_pokedex.domain.model.Pokemon
 import java.util.Locale
+import androidx.compose.ui.text.style.TextAlign
 
 /**
  * A beautiful card representing a Pokémon in the list.
@@ -59,11 +66,35 @@ fun PokemonCard(
                     .clip(RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = pokemon.imageUrl,
                     contentDescription = pokemon.name,
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    loading = {
+                        ShimmerLoader(modifier = Modifier.fillMaxSize())
+                    },
+                    error = {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxSize().padding(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = "Error de red",
+                                tint = Color.Gray.copy(alpha = 0.6f),
+                                modifier = Modifier.size(36.dp)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Sin conexión",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
