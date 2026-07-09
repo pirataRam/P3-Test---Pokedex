@@ -7,6 +7,8 @@ import com.example.p3test_pokedex.data.repository.PokemonRepositoryImpl
 import com.example.p3test_pokedex.domain.repository.PokemonRepository
 import com.example.p3test_pokedex.domain.repository.NetworkMonitor
 import com.example.p3test_pokedex.data.network.NetworkMonitorImpl
+import com.example.p3test_pokedex.domain.repository.AudioPlayer
+import com.example.p3test_pokedex.data.audio.AudioPlayerImpl
 import com.example.p3test_pokedex.domain.usecase.CheckInternetConnectionUseCase
 import com.example.p3test_pokedex.domain.usecase.AddFavoriteUseCase
 import com.example.p3test_pokedex.domain.usecase.GetFavoriteListUseCase
@@ -52,6 +54,7 @@ val networkModule = module {
     }
 
     single<NetworkMonitor> { NetworkMonitorImpl(androidContext()) }
+    single<AudioPlayer> { AudioPlayerImpl() }
 }
 
 val databaseModule = module {
@@ -90,7 +93,7 @@ val useCaseModule = module {
 
 val viewModelModule = module {
     viewModel { PokemonListViewModel(get(), get(), get(), get()) }
-    viewModel { PokemonDetailViewModel(get(), get(), get(), get()) }
+    viewModel { PokemonDetailViewModel(get(), get(), get(), get(), get()) }
 }
 
 val coreModules = listOf(

@@ -1,7 +1,5 @@
 package com.example.p3test_pokedex.presentation.ui
 
-import android.media.AudioAttributes
-import android.media.MediaPlayer
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +39,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -96,36 +93,8 @@ fun PokemonDetailScreen(
     val context = LocalContext.current
     var showConfirmationDialog by remember { mutableStateOf(false) }
 
-    // Remember a MediaPlayer instance that will be released automatically when disposed
-    val mediaPlayer = remember { MediaPlayer() }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            mediaPlayer.release()
-        }
-    }
-
     val playCry: (String) -> Unit = { url ->
-        try {
-            mediaPlayer.reset()
-            mediaPlayer.setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .build()
-            )
-            mediaPlayer.setDataSource(url)
-            mediaPlayer.setOnPreparedListener { mp ->
-                mp.start()
-            }
-            mediaPlayer.setOnErrorListener { mp, _, _ ->
-                mp.reset()
-                true
-            }
-            mediaPlayer.prepareAsync()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        viewModel.playPokemonCry(url)
     }
 
     // Get current loaded Pokemon details if Success

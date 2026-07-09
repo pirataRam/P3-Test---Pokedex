@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.p3test_pokedex.domain.model.Pokemon
 import com.example.p3test_pokedex.domain.model.PokemonDetail
+import com.example.p3test_pokedex.domain.repository.AudioPlayer
 import com.example.p3test_pokedex.domain.usecase.AddFavoriteUseCase
 import com.example.p3test_pokedex.domain.usecase.GetPokemonDetailUseCase
 import com.example.p3test_pokedex.domain.usecase.IsFavoriteUseCase
@@ -24,12 +25,14 @@ sealed interface PokemonDetailUiState {
 
 /**
  * ViewModel for managing the details state and favorite status of a specific Pokémon.
+ * Uses [AudioPlayer] to orchestrate modern and legacy sound playback away from the UI.
  */
 class PokemonDetailViewModel(
     private val getPokemonDetailUseCase: GetPokemonDetailUseCase,
     private val isFavoriteUseCase: IsFavoriteUseCase,
     private val addFavoriteUseCase: AddFavoriteUseCase,
-    private val removeFavoriteUseCase: RemoveFavoriteUseCase
+    private val removeFavoriteUseCase: RemoveFavoriteUseCase,
+    private val audioPlayer: AudioPlayer
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PokemonDetailUiState>(PokemonDetailUiState.Loading)
@@ -37,6 +40,19 @@ class PokemonDetailViewModel(
 
     private val _isFavorite = MutableStateFlow(false)
     val isFavorite: StateFlow<Boolean> = _isFavorite.asStateFlow()
+
+    /**
+     * Plays the Pokémon cry sound from the specified network URL.
+     * Keeps MediaPlayer logic completely decoupled from view composables.
+     */
+    fun playPokemonCry(url: String) {
+        audioPlayer.play(url)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        audioPlayer.release()
+    }
 
     /**
      * Loads the details of a Pokémon using its unique identifier.
