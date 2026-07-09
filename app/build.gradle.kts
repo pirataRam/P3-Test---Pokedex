@@ -2,7 +2,7 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.kotlin.serialization)
-  id("kotlin-kapt")
+  alias(libs.plugins.ksp)
 }
 
 android {
@@ -95,7 +95,7 @@ dependencies {
   // Room Database
   implementation(libs.room.runtime)
   implementation(libs.room.ktx)
-  kapt(libs.room.compiler)
+  ksp(libs.room.compiler)
 
   // Coil Images
   implementation(libs.coil.compose)
