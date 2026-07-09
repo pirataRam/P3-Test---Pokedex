@@ -12,10 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import com.example.p3test_pokedex.presentation.theme.LocalPokedexColors
 
 /**
  * A beautiful, reusable Shimmer effect Composable that acts as a skeleton loader placeholder.
+ * Uses the extended Pokédex theme tokens for proper light/dark mode support.
  *
  * @param modifier The modifier to be applied to the layout.
  */
@@ -23,10 +24,11 @@ import androidx.compose.ui.graphics.Color
 fun ShimmerLoader(
     modifier: Modifier = Modifier
 ) {
+    val colors = LocalPokedexColors.current
     val shimmerColors = listOf(
-        Color.LightGray.copy(alpha = 0.6f),
-        Color.LightGray.copy(alpha = 0.2f),
-        Color.LightGray.copy(alpha = 0.6f),
+        colors.shimmerBase,
+        colors.shimmerHighlight,
+        colors.shimmerBase,
     )
 
     val transition = rememberInfiniteTransition(label = "shimmer")

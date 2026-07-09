@@ -10,10 +10,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.p3test_pokedex.presentation.theme.*
 import java.util.Locale
 
 /**
  * A capsule-shaped tag with custom background colors mapped to Pokémon types.
+ * Colors are sourced from the centralized [Color.kt] palette.
  *
  * @param type The Pokémon type (e.g. "grass", "fire", "water").
  * @param modifier The modifier to be applied to the tag.
@@ -24,25 +26,25 @@ fun TypeTag(
     modifier: Modifier = Modifier
 ) {
     val color = when (type.lowercase(Locale.getDefault())) {
-        "grass" -> Color(0xFF78C850)
-        "fire" -> Color(0xFFF08030)
-        "water" -> Color(0xFF6890F0)
-        "bug" -> Color(0xFFA8B820)
-        "normal" -> Color(0xFFA8A878)
-        "poison" -> Color(0xFFA040A0)
-        "electric" -> Color(0xFFF8D030)
-        "ground" -> Color(0xFFE0C068)
-        "fairy" -> Color(0xFFEE99AC)
-        "fighting" -> Color(0xFFC03028)
-        "psychic" -> Color(0xFFF85888)
-        "rock" -> Color(0xFFB8A038)
-        "ghost" -> Color(0xFF705898)
-        "ice" -> Color(0xFF98D8D8)
-        "dragon" -> Color(0xFF7038F8)
-        "dark" -> Color(0xFF705848)
-        "steel" -> Color(0xFFB8B8D0)
-        "flying" -> Color(0xFFA890F0)
-        else -> Color.Gray
+        "grass" -> TypeGrass
+        "fire" -> TypeFire
+        "water" -> TypeWater
+        "bug" -> TypeBug
+        "normal" -> TypeNormal
+        "poison" -> TypePoison
+        "electric" -> TypeElectric
+        "ground" -> TypeGround
+        "fairy" -> TypeFairy
+        "fighting" -> TypeFighting
+        "psychic" -> TypePsychic
+        "rock" -> TypeRock
+        "ghost" -> TypeGhost
+        "ice" -> TypeIce
+        "dragon" -> TypeDragon
+        "dark" -> TypeDark
+        "steel" -> TypeSteel
+        "flying" -> TypeFlying
+        else -> MaterialTheme.colorScheme.outline
     }
 
     Text(

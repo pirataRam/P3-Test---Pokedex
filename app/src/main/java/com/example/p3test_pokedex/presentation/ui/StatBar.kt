@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.example.p3test_pokedex.presentation.theme.*
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,12 +52,12 @@ fun StatBar(
     }
 
     val progressColor = when (name.lowercase(Locale.getDefault())) {
-        "hp" -> Color(0xFFFF5959)
-        "attack" -> Color(0xFFF5AC78)
-        "defense" -> Color(0xFFFAE078)
-        "special-attack" -> Color(0xFF9DB7F5)
-        "special-defense" -> Color(0xFFA7DB8D)
-        "speed" -> Color(0xFFFA92B2)
+        "hp" -> StatHP
+        "attack" -> StatAttack
+        "defense" -> StatDefense
+        "special-attack" -> StatSpecialAttack
+        "special-defense" -> StatSpecialDefense
+        "speed" -> StatSpeed
         else -> MaterialTheme.colorScheme.primary
     }
 

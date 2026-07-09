@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.example.p3test_pokedex.presentation.theme.LocalPokedexColors
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -67,7 +68,7 @@ fun FavoritesScreen(
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = "No favorites yet",
-                        tint = Color.LightGray.copy(alpha = 0.6f),
+                        tint = LocalPokedexColors.current.emptyStar,
                         modifier = Modifier.fillMaxSize(0.2f)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -82,7 +83,7 @@ fun FavoritesScreen(
                     Text(
                         text = "Entra al detalle de cualquier Pokémon y presiona la estrella para agregarlo aquí.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray,
+                        color = LocalPokedexColors.current.emptyText,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )

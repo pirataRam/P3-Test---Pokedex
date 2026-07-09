@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.Color
+import com.example.p3test_pokedex.presentation.theme.LocalPokedexColors
 import coil.compose.SubcomposeAsyncImage
 import com.example.p3test_pokedex.domain.model.Pokemon
 import java.util.Locale
@@ -83,14 +84,14 @@ fun PokemonCard(
                             Icon(
                                 imageVector = Icons.Default.Warning,
                                 contentDescription = "Error de red",
-                                tint = Color.Gray.copy(alpha = 0.6f),
+                                tint = LocalPokedexColors.current.placeholderIcon,
                                 modifier = Modifier.size(36.dp)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "Sin conexión",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray,
+                                color = LocalPokedexColors.current.placeholderText,
                                 textAlign = TextAlign.Center
                             )
                         }

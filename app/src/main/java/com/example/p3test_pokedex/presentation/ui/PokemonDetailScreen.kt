@@ -49,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.example.p3test_pokedex.presentation.theme.LocalPokedexColors
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -169,7 +170,7 @@ fun PokemonDetailScreen(
                             Icon(
                                 imageVector = Icons.Filled.Star,
                                 contentDescription = "Favorito",
-                                tint = if (isFavorite) Color.Yellow else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                tint = if (isFavorite) LocalPokedexColors.current.favoriteActive else LocalPokedexColors.current.favoriteInactive
                             )
                         }
                     }
@@ -308,14 +309,14 @@ fun PokemonDetailContent(
                         Icon(
                             imageVector = Icons.Filled.Warning,
                             contentDescription = "Error de red",
-                            tint = Color.Gray.copy(alpha = 0.6f),
+                            tint = LocalPokedexColors.current.placeholderIcon,
                             modifier = Modifier.size(64.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "No se pudo cargar la imagen. Conéctate a internet para reintentar.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray,
+                            color = LocalPokedexColors.current.placeholderText,
                             textAlign = TextAlign.Center
                         )
                     }

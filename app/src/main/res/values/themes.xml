@@ -5,10 +5,10 @@
 
     <!-- Theme for the Splash Screen using the official SplashScreen library -->
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <!-- Set the splash screen background -->
-        <item name="windowSplashScreenBackground">#F2F2F7</item>
+        <!-- Set the splash screen background (matches LightBackground from Color.kt) -->
+        <item name="windowSplashScreenBackground">#FAFAFA</item>
         
-        <!-- Set the splash screen icon (our beautiful Pokeball vector!) -->
+        <!-- Set the splash screen icon (our Pokeball vector) -->
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         
         <!-- Set the post-splash screen activity theme -->
