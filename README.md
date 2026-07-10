@@ -116,14 +116,16 @@ Para ejecutar la suite de pruebas unitarias completa desde la terminal de consol
 
 ## 📸 Evidencia de Funcionamiento
 
-*(Opcional recomendado)* Puedes añadir capturas de pantalla o un enlace a un video demostrativo aquí para validar visualmente el comportamiento de la Pokédex:
+A continuación se muestra la evidencia de funcionamiento de la aplicación mediante capturas de pantalla y un video demostrativo:
 
-*   **Pestaña Pokédex (Scroll Infinito y Búsqueda)**:
-    *   `[Inserta aquí tu captura: listado_pokedex.png]`
-*   **Pestaña Mis Favoritos**:
-    *   `[Inserta aquí tu captura: listado_favoritos.png]`
-*   **Detalle Interactivos**:
-    *   `[Inserta aquí tu captura: detalle_pokemon.png]`
+### 🎥 Video Demostrativo
+*   [**Ver Video Demostrativo (Demo.mp4)**](./Demo.mp4)
+
+### 🖼️ Capturas de Pantalla
+
+| 1. Listado (Pokédex) | 2. Detalle del Pokémon | 3. Mis Favoritos |
+| :---: | :---: | :---: |
+| <img src="./1.png" width="250" alt="Listado" /> | <img src="./2.png" width="250" alt="Detalle" /> | <img src="./3.png" width="250" alt="Favoritos" /> |
 
 ---
 
